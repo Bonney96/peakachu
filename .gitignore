@@ -32,4 +32,7 @@ tasks/
 *.mcool
 *.bedpe.multires
 *.bed2ddb
-*.beddb 
+*.beddb
+
+# Task Master generated files
+scripts/task-complexity-report.json 
