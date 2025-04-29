@@ -1,0 +1,101 @@
+Core Features
+
+Batch Loop Calling
+
+What it does: Automates training and scoring across one or more .hic/.cool files at 5 kb and 10 kb resolutions.
+Why it’s important: Enables scalable analysis across cohorts without manual per-sample commands.
+How it works: Wraps Peakachu’s train and score_genome functions in a parallelized CLI subcommand, dispatching per-chromosome jobs.
+
+Intensity Extraction
+
+What it does: Retrieves raw and balanced (CLR-normalized) contact counts for every predicted loop.
+Why it’s important: Provides quantitative values for downstream differential analysis.
+How it works: Uses the cooler API (or equivalent) to query contact matrices and assemble anchor-pair intensities into a tabular output.
+
+CTCF Overlap Annotation
+
+What it does: Flags loops whose anchors overlap provided CTCF ChIP-seq peak BED files.
+Why it’s important: Prioritizes biologically relevant, protein-anchored interactions.
+How it works: Runs bedtools intersect (or pybedtools) to annotate each loop in the BEDPE file.
+
+Differential Comparison
+
+What it does: Computes fold-changes and statistical tests (e.g. Wilcoxon) on loop intensities between IDH-mutant and wild-type groups.
+Why it’s important: Detects mutation-associated changes in chromatin architecture.
+How it works: Aggregates per-loop intensities, computes group means, fold-change, and p-values; outputs a summary CSV.
+
+HiGlass Integration
+
+What it does: Packages predicted loops and intensity tracks into a HiGlass session for interactive exploration.
+Why it’s important: Provides an intuitive, genome-browser view for hypothesis generation.
+How it works: Generates HiGlass JSON configs and ingests datasets via higlass-manage commands.
+
+User Experience
+
+User Personas:
+
+Bioinformatics Researcher – runs cohort analyses, inspects differential loops.
+Computational Developer – integrates Peakachu into pipelines.
+
+Key User Flows:
+
+Setup & Configuration: Install via Conda/docker, create a config YAML listing sample paths, group labels, resolutions, and CTCF BED file.
+Pipeline Execution: Invoke peakachu cohort --config config.yaml; monitor progress logs.
+Results Inspection: Review aggregated BEDPEs & CSVs; launch peakachu higlass --session cohort.hg.json.
+Custom Queries: Filter loops by probability threshold or CTCF flag using CLI options.
+
+UI/UX Considerations:
+
+Clear CLI help text and example configs.
+Standardized output directory structure with human-readable filenames.
+HiGlass tracks labeled by sample and condition.
+
+Development Roadmap
+
+MVP Requirements
+
+cohort train/score: batch loop calling at two resolutions
+extract_intensity: raw & CLR counts puller
+annotate_ctcf: loop annotation with CTCF peaks
+diff_compare: compute fold-change & Wilcoxon p-values
+export_bedpe: assemble final annotated BEDPE
+Unit tests for each module
+
+Future Enhancements
+
+Support additional annotations (e.g. enhancer marks)
+Alternative statistical tests and custom thresholds
+Docker image on Docker Hub
+Web dashboard prototype for summary metrics
+
+Logical Dependency Chain
+
+Phase 0: Initial Setup & Validation
+- Run Peakachu on at least one sample at 5kb and 10kb resolutions successfully.
+- Set up HiGlass locally and verify visualization of Peakachu-generated loops (addressing potential ingestion/display issues).
+
+Phase 1: Core Development
+- Core CLI Framework: argument parsing, config loader
+- Data Input & Validation: .hic/.cool readers, BED files
+- Loop Calling: integrate Peakachu subcommands based on validated single-sample run
+- Intensity Extraction: build and test intensity.py
+- Annotation Module: implement annotate.py
+- Differential Analysis: develop diff.py on extracted intensities
+- Output Formatting: combine modules into export_bedpe
+- HiGlass Integration: finalize JSON generation and ingestion based on local validation
+- End-to-End Testing & Documentation
+
+Risks and Mitigations
+
+Risk                       | Mitigation
+---------------------------|----------------------------------------------------------
+Dependency conflicts       | Pin versions; use Docker container
+Large I/O overhead         | Chunked reads; multi-threading
+Statistical edge cases     | Validate with simulated data; fallback to non-parametric tests
+HiGlass ingest quota/fails | Retry logic; local caching of JSON
+
+Appendix
+
+Citation: Salameh et al., Nat Commun 11, 3428 (2020).
+Genome Assembly: hg38 references
+CTCF Peak Sources: ENCODE ChIP-seq datasets and local datasets

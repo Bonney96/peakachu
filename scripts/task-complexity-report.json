@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "generatedAt": "2025-04-17T17:22:11.883Z",
+    "tasksAnalyzed": 10,
+    "thresholdScore": 5,
+    "projectName": "Your Project Name",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Setup Core CLI Framework",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the Core CLI Framework implementation into 5 subtasks, focusing on command structure, configuration loading, logging setup, output directory management, and help documentation.",
+      "reasoning": "This task involves setting up the foundation of the CLI tool with multiple components (argument parsing, config loading, logging, directory structure). It requires architectural decisions that will impact the entire project, but uses established libraries like argparse/click."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Implement Data Input & Validation Module",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the Data Input & Validation Module into 5 subtasks covering .hic file handling, .cool file handling, BED file validation, consistent API abstraction, and chunked reading implementation.",
+      "reasoning": "This task requires working with multiple file formats and creating a consistent abstraction layer. The complexity comes from handling large genomic files efficiently and implementing chunked reading. Domain knowledge of genomic file formats is necessary."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Develop Batch Loop Calling Module",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the Batch Loop Calling Module into 6 subtasks focusing on Peakachu integration, parallelization implementation, multi-resolution support, progress tracking, error handling, and results aggregation.",
+      "reasoning": "This task involves wrapping an existing tool (Peakachu) with parallelization across multiple dimensions (chromosomes, samples, resolutions). Handling the complexity of distributed processing while maintaining proper logging and error handling makes this challenging."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Build Intensity Extraction Module",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the Intensity Extraction Module into 5 subtasks covering matrix querying, raw count extraction, CLR-normalization handling, tabular output formatting, and memory optimization techniques.",
+      "reasoning": "This task requires deep understanding of contact matrices and normalization methods. The memory optimization for large datasets adds complexity, as does the need to handle both raw and normalized data consistently."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Implement CTCF Overlap Annotation",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the CTCF Overlap Annotation functionality into 4 subtasks covering bedtools integration, anchor overlap detection, genome assembly handling, and annotation output formatting.",
+      "reasoning": "This task is more straightforward as it primarily involves using existing tools (bedtools) to perform genomic interval operations. The complexity is moderate due to the need to handle different genome assemblies and integrate with the loop data structure."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Develop Differential Comparison Module",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the Differential Comparison Module into 6 subtasks covering data aggregation, statistical test implementation, fold-change calculation, p-value computation, edge case handling, and results summarization.",
+      "reasoning": "This task involves implementing statistical methods to compare loop intensities between sample groups. The complexity comes from proper statistical analysis, handling edge cases, and ensuring the results are biologically meaningful. Domain knowledge in both statistics and genomics is required."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Create Output Formatting Module",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the Output Formatting Module into 4 subtasks covering data integration from multiple sources, BEDPE format implementation, filtering options, and downstream compatibility verification.",
+      "reasoning": "This task involves combining results from multiple modules into a standardized format. While not technically complex, it requires careful attention to detail to ensure the output meets the BEDPE specification and is compatible with downstream tools."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Implement HiGlass Integration",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the HiGlass Integration into 5 subtasks covering JSON config generation, higlass-manage command integration, track generation for different data types, error handling with retries, and local caching implementation.",
+      "reasoning": "This task requires integration with an external visualization tool (HiGlass) and understanding its configuration format. The complexity comes from handling potential failures in the external system and implementing proper retry logic and caching."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Implement End-to-End Pipeline",
+      "complexityScore": 9,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the End-to-End Pipeline implementation into 7 subtasks covering module orchestration, error handling strategy, multi-threading implementation, temporary file management, progress reporting, pipeline state management, and recovery mechanisms.",
+      "reasoning": "This is the most complex task as it integrates all previous modules into a cohesive workflow. It requires robust error handling, resource management, and state tracking. The pipeline must be resilient to failures at any stage and provide meaningful progress updates."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Create Documentation and Examples",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the Documentation and Examples task into 5 subtasks covering installation instructions (Conda/Docker), user guide development, example configuration creation, output format documentation, and troubleshooting guide compilation.",
+      "reasoning": "While not technically complex, comprehensive documentation requires understanding all aspects of the system and explaining them clearly. The need to cover multiple installation methods, all commands, and troubleshooting scenarios makes this a substantial task."
+    }
+  ]
+}
