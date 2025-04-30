@@ -30,7 +30,94 @@ Key functionalities include:
 
 ## Getting Started
 
-*(Instructions for installation, configuration (e.g., `config.yaml`), and basic usage examples will be added here).*
+### Installation
+
+This toolkit is designed as a Python package. You can install it directly from this repository using pip:
+
+```bash
+pip install git+https://github.com/your-username/peakachu-cohort-analysis.git
+# Or, after cloning the repository:
+# cd peakachu-cohort-analysis
+# pip install .
+```
+
+We recommend using a dedicated virtual environment (e.g., conda or venv). Ensure you have Python 3.8 or higher.
+
+### Configuration
+
+The main workflow is driven by a configuration file, typically named `config.yaml`. This file specifies input data locations, analysis parameters, and group definitions for comparisons.
+
+Here's an example structure:
+
+```yaml
+# config.yaml example
+output_dir: ./results/cohort_analysis
+resolutions: [5000, 10000] # Resolutions in bp (e.g., 5kb, 10kb)
+
+# --- Input Data ---
+hic_files: # List of .hic or .cool files
+  - /path/to/sample1.hic
+  - /path/to/sample2.mcool::/resolutions/5000 # Specify resolution for multi-res coolers
+  - /path/to/sample3.hic
+  # ... more samples
+
+ctcf_peaks: # Optional: BED file with CTCF peaks for annotation
+  - /path/to/ctcf_peaks.bed
+
+# --- Peakachu Parameters ---
+peakachu_model: /path/to/pretrained/peakachu_model.pkl # Optional: Use a pre-trained model
+peakachu_params: # Parameters passed to Peakachu score_genome
+  min_dist: 10000
+  max_dist: 3000000
+  # ... other peakachu parameters
+
+# --- Cohort & Group Definitions ---
+samples: # Define metadata and group assignment for each sample
+  sample1:
+    group: 'wildtype'
+    # Add other metadata if needed
+  sample2:
+    group: 'mutant'
+  sample3:
+    group: 'wildtype'
+  # ... map sample names (from hic_files base names) to groups
+
+groups: # Define the groups for comparison
+  - wildtype
+  - mutant
+
+# --- Differential Analysis ---
+differential_params:
+  method: 'wilcoxon' # 'foldchange' or 'wilcoxon'
+  pseudocount: 1 # For fold-change calculation
+  fdr_threshold: 0.05 # Significance threshold
+
+# --- HiGlass Configuration ---
+higlass_options:
+  server: 'http://localhost:8888/api/v1' # Your HiGlass server API endpoint
+  track_color_range: ['#FFFFFF', '#FF0000'] # Color range for intensity tracks
+
+```
+
+Adjust the paths and parameters according to your specific dataset and analysis goals.
+
+### Basic Usage
+
+The primary way to run the analysis is via the main script (e.g., `run_cohort_analysis.py`), providing the configuration file:
+
+```bash
+python run_cohort_analysis.py --config config.yaml
+```
+
+This command will execute the following steps based on the configuration:
+
+1.  **Run Peakachu `score_genome`** for each sample and resolution.
+2.  **Extract loop intensities** (raw and normalized).
+3.  **Annotate loops** with CTCF overlap (if provided).
+4.  **Perform differential analysis** between specified groups.
+5.  **Generate HiGlass configuration** files for visualization.
+
+Results will be saved in the directory specified by `output_dir` in the `config.yaml` file.
 
 ## Development Roadmap
 
