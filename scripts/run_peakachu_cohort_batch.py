@@ -85,41 +85,40 @@ def main():
     logger.info(f"Using Base Input Directory: {args.base_input_dir}")
     logger.info(f"Using Base Output Directory: {args.base_output_dir}")
 
-    # --- Recursively discover samples by scanning for mcool files ---
-    logger.info(f"Recursively scanning {args.base_input_dir} for mcool files...")
+    # --- Recursively discover samples by scanning for mapq_30 mcool files ---
+    logger.info(f"Recursively scanning {args.base_input_dir} for mapq_30.mcool files...")
     
-    sample_dirs = []
-    sample_mcool_paths = {}
+    # Stores {sample_name: path_to_mapq_30_mcool}
+    sample_mapq30_paths = {}
     
     # Walk through all directories recursively
     for root, dirs, files in os.walk(args.base_input_dir):
-        # Look for mcool files
-        mcool_files = [f for f in files if f.endswith('.mcool')]
-        if mcool_files:
-            # Get the sample directory (parent of the mcool file)
+        # Look specifically for mapq_30.mcool files
+        mapq30_files = [f for f in files if f.endswith('mapq_30.mcool')]
+        
+        if mapq30_files:
+            # Determine the likely sample directory
             sample_dir = os.path.dirname(root) if os.path.basename(root) == "mcool" else root
             sample_name = os.path.basename(sample_dir)
             
             # Only include if it matches our sample patterns (AML* or CD34*)
-            if sample_name.startswith("AML") or sample_name.startswith("CD34"):
-                sample_dirs.append(sample_dir)
-                # Store the full path to the mcool file
-                for mcool_file in mcool_files:
-                    mcool_path = os.path.join(root, mcool_file)
-                    if sample_name not in sample_mcool_paths:
-                        sample_mcool_paths[sample_name] = []
-                    sample_mcool_paths[sample_name].append(mcool_path)
-    
-    if not sample_dirs:
-        logger.warning(f"No mcool files found in sample directories matching AML* or CD34* in {args.base_input_dir}. Exiting.")
+            # and we haven't already found a mapq_30 file for this sample
+            if (sample_name.startswith("AML") or sample_name.startswith("CD34")) and sample_name not in sample_mapq30_paths:
+                # Take the first mapq_30 file found for this sample
+                mapq30_path = os.path.join(root, mapq30_files[0])
+                sample_mapq30_paths[sample_name] = mapq30_path
+                # Log if multiple mapq_30 files are found in the same directory (unexpected)
+                if len(mapq30_files) > 1:
+                     logger.warning(f"Multiple mapq_30.mcool files found for sample {sample_name} in {root}. Using {mapq30_files[0]}")
+
+    if not sample_mapq30_paths:
+        logger.warning(f"No mapq_30.mcool files found in sample directories matching AML* or CD34* in {args.base_input_dir}. Exiting.")
         return # Or sys.exit(1)
     
-    # Remove duplicates and sort
-    sample_dirs = sorted(list(set(sample_dirs)))
-    sample_names = [os.path.basename(d) for d in sample_dirs]
+    # Get sorted list of sample names that have mapq_30 files
+    sample_names = sorted(list(sample_mapq30_paths.keys()))
     
-    logger.info(f"Found {len(sample_names)} samples with mcool files: {', '.join(sample_names)}")
-    logger.info(f"Total mcool files found: {sum(len(paths) for paths in sample_mcool_paths.values())}")
+    logger.info(f"Found {len(sample_names)} samples with mapq_30.mcool files: {', '.join(sample_names)}")
 
     commands_to_run = []
     output_script_content = ["#!/bin/bash", "# Generated peakachu-cohort commands"]
@@ -131,21 +130,22 @@ def main():
     output_script_content.append("echo 'Ensured base output directory exists.'")
 
     for sample_name in sample_names:
-        sample_dir = os.path.join(args.base_input_dir, sample_name)
-        mcool_file = get_mcool_path(sample_dir)
+        # Get the pre-determined path for the mapq_30 mcool file
+        mcool_file_path = sample_mapq30_paths.get(sample_name)
 
-        if not mcool_file: # Should not happen with current logic, but good practice
-             logger.warning(f"Could not determine mcool path for sample: {sample_name}. Skipping.")
+        if not mcool_file_path:
+             # This check is now redundant due to how sample_names is derived, but kept for safety
+             logger.error(f"Logic error: Could not find mapq_30 path for sample {sample_name} which should exist. Skipping.")
              continue
 
         # Define sample-specific output directory
         output_dir_sample = os.path.join(args.base_output_dir, sample_name)
         mkdir_sample_cmd = f"mkdir -p '{output_dir_sample}'"
 
-        # Generate the command
+        # Generate the command using the specific mapq_30 path
         run_cmd = generate_command(
             PEAKACHU_COMMAND,
-            mcool_file,
+            mcool_file_path, # Use the direct path found earlier
             output_dir_sample,
             RESOLUTIONS,
             PEAKACHU_EXTRA_PARAMS

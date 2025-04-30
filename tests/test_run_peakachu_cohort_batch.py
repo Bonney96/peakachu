@@ -46,24 +46,21 @@ class TestPeakachuBatchCommandGeneration(unittest.TestCase):
         
         found_sample_dirs = set()
         for root, dirs, files in os.walk(base_input_dir):
-            # Check if current directory contains any .mcool files
-            if any(f.endswith('.mcool') for f in files):
+            # Check if current directory contains any mapq_30.mcool files
+            if any(f.endswith('mapq_30.mcool') for f in files):
                 # Determine the likely sample directory
-                # If the mcool file is directly in a dir named 'mcool', the sample dir is the parent
-                # Otherwise, assume the current root is the sample dir (less likely based on image)
                 potential_sample_dir = os.path.dirname(root) if os.path.basename(root) == "mcool" else root
                 sample_name = os.path.basename(potential_sample_dir)
                 
                 # Check if it matches the expected naming pattern
                 if sample_name.startswith("AML") or sample_name.startswith("CD34"):
-                    # Add the parent directory (the actual sample dir) to the set
                     found_sample_dirs.add(potential_sample_dir)
 
         # Get the basenames for the final expected set
         self.expected_samples = {os.path.basename(d) for d in found_sample_dirs}
 
         if not self.expected_samples:
-             self.skipTest(f"No samples with .mcool files found matching AML* or CD34* in {base_input_dir}. Skipping test.")
+             self.skipTest(f"No samples with mapq_30.mcool files found matching AML* or CD34* in {base_input_dir}. Skipping test.")
         # ---------------------------------------------------------
 
     def tearDown(self):
