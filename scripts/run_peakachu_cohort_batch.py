@@ -138,11 +138,10 @@ def main():
         commands_to_run.append(mkdir_sample_cmd)
         commands_to_run.append(run_cmd)
 
-        output_script_content.append(f"
-# Processing sample: {sample_name}")
+        output_script_content.append(f"# Processing sample: {sample_name}")
         output_script_content.append(mkdir_sample_cmd)
         output_script_content.append(run_cmd)
-        output_script_content.append(f"echo 'Submitted/Completed job for {sample_name}'") # Placeholder echo
+        output_script_content.append(f"echo \'Submitted/Completed job for {sample_name}\'") # Placeholder echo
 
     logger.info(f"Generated {len(commands_to_run) -1} peakachu commands.") # -1 for base mkdir
 
