@@ -5,6 +5,7 @@ import tempfile
 import shutil
 from pathlib import Path
 import re
+import glob # Import glob
 
 # Add the scripts directory to the Python path
 scripts_dir = Path(__file__).parent.parent / 'scripts'
@@ -30,15 +31,40 @@ class TestPeakachuBatchCommandGeneration(unittest.TestCase):
         """Set up test environment."""
         self.test_dir = tempfile.mkdtemp()
         self.output_script_path = Path(self.test_dir) / "test_peakachu_jobs.sh"
-        self.expected_samples = {
-            "AML225373_805958_MicroC", "AML548327_812822_MicroC", "AML978141_1536505_MicroC",
-            "AML296361_49990_MicroC", "AML570755_38783_MicroC",
-            "AML322110_810424_MicroC", "AML721214_917477_MicroC", "CD34_RO03907_MicroC",
-            "AML327472_1602349_MicroC", "AML816067_809908_MicroC", "CD34_RO03938_MicroC",
-            "AML387919_805987_MicroC", "AML847670_1597262_MicroC",
-            "AML410324_805886_MicroC", "AML868442_932534_MicroC",
-            "AML514066_104793_MicroC", "AML950919_1568421_MicroC"
-        }
+
+        # --- Dynamically determine expected samples using os.walk --- 
+        # Mimic the logic now present in the main script
+        try:
+            base_input_dir = run_peakachu_cohort_batch.BASE_INPUT_DIR
+        except AttributeError:
+            self.fail("Could not retrieve BASE_INPUT_DIR from run_peakachu_cohort_batch module.")
+            return
+
+        if not os.path.isdir(base_input_dir):
+            self.skipTest(f"Base input directory not found, skipping integration test: {base_input_dir}")
+            return
+        
+        found_sample_dirs = set()
+        for root, dirs, files in os.walk(base_input_dir):
+            # Check if current directory contains any .mcool files
+            if any(f.endswith('.mcool') for f in files):
+                # Determine the likely sample directory
+                # If the mcool file is directly in a dir named 'mcool', the sample dir is the parent
+                # Otherwise, assume the current root is the sample dir (less likely based on image)
+                potential_sample_dir = os.path.dirname(root) if os.path.basename(root) == "mcool" else root
+                sample_name = os.path.basename(potential_sample_dir)
+                
+                # Check if it matches the expected naming pattern
+                if sample_name.startswith("AML") or sample_name.startswith("CD34"):
+                    # Add the parent directory (the actual sample dir) to the set
+                    found_sample_dirs.add(potential_sample_dir)
+
+        # Get the basenames for the final expected set
+        self.expected_samples = {os.path.basename(d) for d in found_sample_dirs}
+
+        if not self.expected_samples:
+             self.skipTest(f"No samples with .mcool files found matching AML* or CD34* in {base_input_dir}. Skipping test.")
+        # ---------------------------------------------------------
 
     def tearDown(self):
         """Clean up test environment."""

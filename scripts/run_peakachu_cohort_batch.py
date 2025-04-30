@@ -85,22 +85,41 @@ def main():
     logger.info(f"Using Base Input Directory: {args.base_input_dir}")
     logger.info(f"Using Base Output Directory: {args.base_output_dir}")
 
-    # --- This part needs to run on the HPC or simulate its findings ---
-    # For local generation, we rely on the user knowing the sample names
-    # or creating dummy directories locally if needed for glob to work.
-    # A more robust approach for local generation might involve providing a
-    # list of sample names directly.
-    # Let's simulate finding sample names based on the user's provided list:
-    sample_names = [
-        "AML225373_805958_MicroC", "AML548327_812822_MicroC", "AML978141_1536505_MicroC",
-        "AML296361_49990_MicroC", "AML570755_38783_MicroC",
-        "AML322110_810424_MicroC", "AML721214_917477_MicroC", "CD34_RO03907_MicroC",
-        "AML327472_1602349_MicroC", "AML816067_809908_MicroC", "CD34_RO03938_MicroC",
-        "AML387919_805987_MicroC", "AML847670_1597262_MicroC",
-        "AML410324_805886_MicroC", "AML868442_932534_MicroC",
-        "AML514066_104793_MicroC", "AML950919_1568421_MicroC"
-    ]
-    logger.info(f"Found {len(sample_names)} potential sample names (simulated).")
+    # --- Recursively discover samples by scanning for mcool files ---
+    logger.info(f"Recursively scanning {args.base_input_dir} for mcool files...")
+    
+    sample_dirs = []
+    sample_mcool_paths = {}
+    
+    # Walk through all directories recursively
+    for root, dirs, files in os.walk(args.base_input_dir):
+        # Look for mcool files
+        mcool_files = [f for f in files if f.endswith('.mcool')]
+        if mcool_files:
+            # Get the sample directory (parent of the mcool file)
+            sample_dir = os.path.dirname(root) if os.path.basename(root) == "mcool" else root
+            sample_name = os.path.basename(sample_dir)
+            
+            # Only include if it matches our sample patterns (AML* or CD34*)
+            if sample_name.startswith("AML") or sample_name.startswith("CD34"):
+                sample_dirs.append(sample_dir)
+                # Store the full path to the mcool file
+                for mcool_file in mcool_files:
+                    mcool_path = os.path.join(root, mcool_file)
+                    if sample_name not in sample_mcool_paths:
+                        sample_mcool_paths[sample_name] = []
+                    sample_mcool_paths[sample_name].append(mcool_path)
+    
+    if not sample_dirs:
+        logger.warning(f"No mcool files found in sample directories matching AML* or CD34* in {args.base_input_dir}. Exiting.")
+        return # Or sys.exit(1)
+    
+    # Remove duplicates and sort
+    sample_dirs = sorted(list(set(sample_dirs)))
+    sample_names = [os.path.basename(d) for d in sample_dirs]
+    
+    logger.info(f"Found {len(sample_names)} samples with mcool files: {', '.join(sample_names)}")
+    logger.info(f"Total mcool files found: {sum(len(paths) for paths in sample_mcool_paths.values())}")
 
     commands_to_run = []
     output_script_content = ["#!/bin/bash", "# Generated peakachu-cohort commands"]
@@ -110,7 +129,6 @@ def main():
     commands_to_run.append(mkdir_base_cmd)
     output_script_content.append(mkdir_base_cmd)
     output_script_content.append("echo 'Ensured base output directory exists.'")
-
 
     for sample_name in sample_names:
         sample_dir = os.path.join(args.base_input_dir, sample_name)
@@ -123,7 +141,6 @@ def main():
         # Define sample-specific output directory
         output_dir_sample = os.path.join(args.base_output_dir, sample_name)
         mkdir_sample_cmd = f"mkdir -p '{output_dir_sample}'"
-
 
         # Generate the command
         run_cmd = generate_command(
