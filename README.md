@@ -1,6 +1,6 @@
 # Peakachu Cohort Analysis Toolkit
 
-This project extends the capabilities of the [Peakachu loop caller](https://www.nature.com/articles/s41467-020-17189-7) (Salameh et al., Nat Commun 11, 3428 (2020)) to enable scalable analysis of chromatin loops across cohorts of samples.
+This project extends the capabilities of the [Peakachu loop caller]([https://www.nature.com/articles/s41467-020-17189-7](https://github.com/tariks/peakachu?tab=readme-ov-file)) (Salameh et al., Nat Commun 11, 3428 (2020)) to enable scalable analysis of chromatin loops across cohorts of samples.
 
 ## Core Features
 
